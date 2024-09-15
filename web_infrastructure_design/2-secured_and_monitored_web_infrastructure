@@ -1,0 +1,51 @@
+1. User Browser:
+    The user enters https://www.foobar.com in the browser.
+
+2. DNS Resolution:
+    The DNS resolves the URL to the IP address of the HAProxy server.
+
+3. Firewall 1 (External Firewall):
+    The request first goes through Firewall 1 to filter out any malicious traffic.
+
+4. HAProxy Load Balancer:
+    HAProxy receives the filtered request from Firewall 1.
+
+5. SSL Termination:
+     If the request is HTTPS, it will be encrypted; otherwise, it will be HTTP.
+
+6. Forwarding: 
+    HAProxy forwards the request to one of the Web Servers (Nginx).
+7. Firewall 2 (Web Server Firewall):
+    The request passes through Firewall 2 to ensure only traffic from HAProxy reaches the Web Server.
+
+8. Web Server (Nginx) with SSL Certificate:
+    The Web Server (Nginx):
+
+    Handles the SSL termination (if the request is encrypted).
+    Checks if the request is for static or dynamic content.
+    If it's static content, Nginx serves it directly.
+    If it's dynamic content, Nginx forwards the request to the Application Server (Flask).
+
+9. Firewall 3 (Application Server Firewall):
+    The request goes through Firewall 3, filtering traffic to the Application Server.
+
+10. Application Server (Flask):
+
+    The Application Server processes the dynamic request, queries the MySQL Database, and returns the data back to the Web Server (Nginx).
+
+11. Web Server (Nginx):
+
+    Receives the dynamic response from the Application Server.
+    Forwards the combined content (static and dynamic) back to HAProxy.
+
+12. HAProxy:
+
+    HAProxy receives the response and forwards it back to the user's browser.
+
+13. User Browser:
+
+    The user's browser receives the final response and renders the content.
+
+14. Monitoring Clients:
+
+    Each component (HAProxy, Web Server, Application Server) has its own monitoring client to collect and send metrics and logs to a monitoring service for performance and security monitoring.

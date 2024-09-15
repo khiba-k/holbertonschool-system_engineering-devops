@@ -1,0 +1,42 @@
+1. User Requests a URL:
+
+The user enters the URL www.foobar.com in their browser.
+2. DNS Resolution:
+
+    The DNS resolves the URL into the IP address of the HAProxy Load Balancer (instead of directly pointing to the web server).
+    
+3. Request Sent to HAProxy:
+
+    The browser sends an HTTP request to the HAProxy load balancer.
+
+4. HAProxy Distributes Requests:
+
+    HAProxy receives the request and checks the current load on the available web servers (like Nginx). It then forwards the request to one of the web servers based on the load-balancing algorithm (e.g., round-robin, least connections, etc.).
+
+5. Web Server Handles Request:
+
+    The selected web server (Nginx) processes the request. If it's for static content, it sends the response back to the HAProxy, which forwards it to the browser.
+    If it's for dynamic content, the web server forwards the request to the appropriate application server (Flask).
+
+6. Application Server Fetches Data:
+
+    The application server queries the MySQL database for data and sends the result back to the web server.
+
+7. Response is Returned:
+
+    The web server sends the final content (dynamic or static) back to the HAProxy.
+    HAProxy forwards the response to the user's browser.
+
+Why Place HAProxy Here ?
+
+    1. Distributes Load Efficiently:
+        Placing HAProxy in front of the web servers allows it to distribute incoming traffic evenly across multiple web servers, preventing any single server from becoming overloaded.
+
+    2. Improves Availability:
+        If one of the web servers fails, HAProxy can automatically reroute traffic to another healthy server, ensuring the website remains accessible.
+
+    3. Handles Failover:
+        HAProxy can detect server failures and ensure that traffic is only sent to healthy servers, improving reliability.
+
+    4. Centralized Traffic Management:
+        With HAProxy managing all incoming traffic, you have a single point of control where you can apply rate limiting, SSL termination, caching, and other optimizations to improve overall performance and security.
