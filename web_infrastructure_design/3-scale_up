@@ -1,0 +1,93 @@
+1. User Browser:
+
+    The user enters https://www.foobar.com in the browser, initiating an HTTP/HTTPS request.
+
+2. DNS Resolution:
+
+    The DNS resolves the URL to the IP addresses of the HAProxy Load Balancer Cluster (explained in step 4).
+
+3. Firewall 1 (External Firewall):
+
+    The request first passes through Firewall 1 to filter out any potentially malicious traffic before reaching the load balancer cluster.
+
+4. HAProxy Load Balancer Cluster:
+
+    The request arrives at a cluster of two HAProxy Load Balancers, which distribute traffic to multiple web servers. This setup ensures high availability and fault tolerance.
+    Why Add a Second Load Balancer?
+    Redundancy: If one load balancer fails, the second one will take over, preventing downtime.
+    Scalability: It allows for better traffic distribution, especially under heavy load.
+
+5. SSL Termination:
+
+    If the request is HTTPS, SSL termination happens at the load balancer. This means the load balancer decrypts the SSL traffic and forwards the request to the web servers over HTTP.
+    Why Terminate SSL at Load Balancer?
+    Reduces the workload on the web servers by handling SSL encryption/decryption at the load balancer.
+    
+6. Forwarding:
+
+    Once decrypted (if HTTPS), HAProxy forwards the request to one of the web servers (Nginx), based on load-balancing algorithms.
+
+7. Firewall 2 (Web Server Firewall):
+
+    The request passes through Firewall 2 to filter traffic before reaching the web servers, ensuring only allowed traffic (i.e., from HAProxy) makes it to the servers.
+
+8. Web Server (Nginx) on Separate Server:
+
+    Nginx resides on its own server, separate from the application server and database server, which improves scalability and separation of concerns.
+
+    The web server:
+
+        Handles the SSL termination (if HAProxy didn’t do it).
+        Checks if the request is for static content or dynamic content.
+        If it's static (e.g., images, CSS), Nginx serves it directly.
+        If it's dynamic, it forwards the request to the Application Server.
+        Why Split Web Server onto a Separate Server?
+        Performance: Dedicated resources for handling web traffic (static and dynamic requests) improve performance.
+        Security: Keeping web, application, and database servers on separate machines limits the exposure of critical components to the internet.
+
+9. Firewall 3 (Application Server Firewall):
+
+    The request is passed through another firewall that filters traffic reaching the application server. Only authorized traffic from the web server is allowed.
+
+10. Application Server (Flask) on Separate Server:
+
+    Flask (or any other application server) resides on a separate server to handle dynamic content requests.
+    It processes the request, queries the MySQL Database, and generates dynamic content.
+    Why Split the Application Server?
+    Modularity and Scalability: Having the application logic on its own server ensures you can scale the application layer independently. This allows for better resource management and the ability to handle more users by adding more application servers when needed.
+
+11. Firewall 4 (Database Server Firewall):
+
+    Before any database query is made, the request passes through a firewall that ensures only requests from the application server are allowed to query the database.
+
+12. Database Server (MySQL) on Separate Server:
+
+    The MySQL Database is hosted on its own server. This server is accessed only by the application server for security and performance reasons.
+    It stores and manages all application data and returns results to the application server.
+    Why Split the Database Server?
+    Data Security: Isolating the database from the web and application servers helps protect sensitive data from being exposed directly to the internet.
+    Performance: A dedicated database server improves read/write speeds and allows for better optimization.
+
+13. Web Server (Nginx):
+
+    After receiving the dynamic response from the application server, Nginx merges the static and dynamic content and prepares the final response.
+    Nginx then sends the completed response back to the load balancer.
+
+14. HAProxy (Load Balancer Cluster):
+
+    HAProxy receives the response from Nginx and forwards it back to the user’s browser.
+
+15. User Browser:
+
+    The browser receives the final response and renders the web page or application.
+
+16. Monitoring Clients:
+
+    Each server (Load Balancer, Web Server, Application Server, Database Server) is monitored by separate clients, sending logs and metrics to a centralized monitoring system. This ensures proactive performance tracking and security monitoring.
+    Why Add Monitoring?
+    Performance Analysis: Allows for the monitoring of server health, load, and traffic in real-time.
+    Security: Detects anomalies or malicious activities early, allowing for quick remediation.
+    Summary of Additional Elements:
+    Second Load Balancer (HAProxy Cluster): For high availability, redundancy, and better traffic distribution.
+    Separate Servers for Web, Application, and Database: To enhance scalability, performance, and security by dedicating specific resources to each layer.
+    Additional Firewalls: To ensure that traffic is tightly controlled between servers, protecting sensitive components like the database.
